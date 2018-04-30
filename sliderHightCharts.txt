@@ -1,0 +1,80 @@
+1. https://stackoverflow.com/questions/19095806/highcharts-gauge-chart-update-on-slider
+=================
+function updateGaugeChart(chart, value){
+    var point = chart.series[0].points[0];
+    var newVal = value;
+    point.update(newVal);
+}
+$(function () {
+    var chartObj = {
+
+        chart: {
+            type: 'gauge',
+            renderTo:"container"
+        },
+        pane: {
+            startAngle: -150,
+            endAngle: 150
+
+        },
+
+        // the value axis
+        yAxis: {
+            min: 0,
+            max: 200,
+
+            minorTickInterval: 'auto',
+            minorTickWidth: 1,
+            minorTickLength: 10,
+            minorTickPosition: 'inside',
+            minorTickColor: '#666',
+
+            tickPixelInterval: 30,
+            tickWidth: 2,
+            tickPosition: 'inside',
+            tickLength: 10,
+            tickColor: '#666',
+            labels: {
+                step: 2,
+                rotation: 'auto'
+            },
+            title: {
+                text: 'km/h'
+            }
+
+        },
+        series: [{
+            name: 'Speed',
+            data: [80],
+            tooltip: {
+                valueSuffix: ' km/h'
+            }
+        }]};
+    var gaugeChartObj = new Highcharts.Chart(chartObj);
+
+         $("#slider").slider({
+         value: 75,
+         range: "min",
+         min:0, 
+         max:200,
+         animate: true,
+         slide: function( event, ui ) { 
+            $("#slider-val").text(ui.value);
+            updateGaugeChart(gaugeChartObj, ui.value);
+         }       
+     });    
+
+
+});
+
+=============
+ chart: {
+        type: 'gauge',
+        renderTo: "container",
+        animation:false
+    },
+
+
+====================================
+2. https://www.hcharts.cn/demo/highcharts/combo-dual-axes
+========================================

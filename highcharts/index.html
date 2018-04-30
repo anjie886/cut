@@ -1,0 +1,225 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Language" content="zh-CN">
+<script type="text/javascript" src="lib/jquery1.42.min.js"></script>
+<script type="text/javascript" src="lib/jquery.SuperSlide.2.1.1.js"></script>
+<script type="text/javascript" src="lib/highcharts.src.js"></script>
+</head>
+<body>
+
+<style type="text/css">
+		/* css 重置 */
+		*{margin:0; padding:0; list-style:none; }
+		body{ background:#fff; font:normal 12px/22px 宋体;  }
+		img{ border:0;  }
+		a{ text-decoration:none; color:#333;  }
+		a:hover{ color:#1974A1;  }
+
+		/* 本例子css */
+		.txtScroll-left{ width:630px;  position:relative;  border:1px solid #ccc; margin: 0 auto;  }
+		.txtScroll-left .hd{ overflow:hidden;  height:30px; background:#f4f4f4; padding:0 10px;  }
+		.txtScroll-left .hd .prev,.txtScroll-left .hd .next{ display:block;  width:5px; height:9px; float:right; margin-right:5px; margin-top:10px;  overflow:hidden; cursor:pointer; background:url("images/arrow.png") no-repeat;}
+		.txtScroll-left .hd .next{ background-position:0 -50px; background:#ff0; }
+		.txtScroll-left .hd .prevStop{ background-position:-60px 0; }
+		.txtScroll-left .hd .nextStop{ background-position:-60px -50px; }
+		.txtScroll-left .hd ul{ float:right; overflow:hidden; zoom:1; margin-top:10px;  }
+		.txtScroll-left .hd ul li{ float:left;  width:9px; height:9px; overflow:hidden; margin-right:5px; text-indent:-999px; cursor:pointer; background:#ff0; }
+		.txtScroll-left .hd ul li.on{ background-position:0 0; }
+		.txtScroll-left .bd{ padding:10px; width:600px; overflow:hidden;    }
+		.txtScroll-left .bd ul{ overflow:hidden; zoom:1; }
+		.txtScroll-left .bd ul li{ width:600px;height:400px}
+		.txtScroll-left .bd ul li span{ color:#999;  }
+</style>
+
+<div class="txtScroll-left">
+	<div class="hd">
+		<a class="next"></a>
+		<ul class="num"><li>1</li><li>2</li><li>3</li></ul>
+		<a class="prev"></a>
+		<span class="pageState"></span>
+	</div>
+	<div class="bd">
+		<ul class="infoList">
+			<li id="container1"></li>
+			<li id="container2"></li>
+			<li id="container3"></li>
+		</ul>
+	</div>
+</div>
+
+
+<script type="text/javascript">
+ jQuery(".txtScroll-left").slide({titCell:".hd ul",mainCell:".bd ul",autoPage:true,effect:"left",autoPlay:true});
+
+ $(function () {
+	 var option = {
+        chart: {
+            zoomType: 'xy'
+        },
+        title: {
+            text: '东京月平均温度和降雨量'
+        },
+        subtitle: {
+            text: '数据来源: WorldClimate.com'
+        },
+        xAxis: [{
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                         'Jul'],
+            crosshair: true // 启用竖直方向准星线
+        }],
+        yAxis: [{ // Primary yAxis
+            labels: {
+                format: '{value}°C',
+                style: {
+                    color: Highcharts.getOptions().colors[1]
+                }
+            },
+            title: {
+                text: '温度',
+                style: {
+                    color: Highcharts.getOptions().colors[1]
+                }
+            }
+        }, { // Secondary yAxis
+            title: {
+                text: '降雨量',
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            },
+            labels: {
+                format: '{value} mm',
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            },
+            opposite: true
+        }],
+        tooltip: {
+			enabled: false, //通过设置 tooltip.enabled = false 即可不启用提示框 https://www.hcharts.cn/docs/basic-tooltip
+            shared: true
+        },
+		plotOptions: {
+			series: {
+				events: {
+					click: function (event) {
+						console.log(this, event.point.series.points);
+						//this.chart.tooltip.refresh(event.point.series.points, event);
+						hs.htmlExpand(null, {
+                                      pageOrigin: {
+                                          x: this.pageX,
+                                          y: this.pageY
+                                      },
+                                      headingText: this.series.name,
+                                      maincontentText: '值：' + this.y +':<br/>时间：'+
+                                          Highcharts.dateFormat('%Y-%m-%e %H:%M:%S', this.x),
+                                      width: 200
+                                  });
+					}
+				}
+			}
+		},
+        legend: {
+            layout: 'vertical',
+            align: 'left',
+            x: 120,
+            verticalAlign: 'top',
+            y: 100,
+            floating: true,
+            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+        },
+        series: [{
+            name: '降雨量',
+            type: 'column',
+            yAxis: 1,
+            data: [49.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6],
+            tooltip: {
+                valueSuffix: ' mm'
+            }
+        }, {
+            name: '温度',
+            type: 'spline',
+            data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2],
+            tooltip: {
+                valueSuffix: '°C'
+            }
+        }]
+    };
+
+
+    $('#container1').highcharts(option);
+	option.title.text = '配置2';
+	option.series[0].data = [10, 20, 30, 40, 50];
+	option.series[1].data = [4, 5, 6, 7, 8];
+	$('#container2').highcharts(option);
+	option.title.text = '配置3';
+	option.series[0].data = [11, 22, 33, 44, 55];
+	option.series[1].data = [4.4, 3.3, 5.5, 6.7, 8.8];
+	$('#container3').highcharts(option);
+});
+
+</script>
+
+<!--
+关于数据提示框的外观的常用配置
+tooltip: {
+    backgroundColor: '#FCFFC5',   // 背景颜色
+    borderColor: 'black',         // 边框颜色
+    borderRadius: 10,             // 边框圆角
+    borderWidth: 3,               // 边框宽度
+    shadow: true,                 // 是否显示阴影
+    animation: true               // 是否启用动画效果
+    style: {                      // 文字内容相关样式
+        color: "#ff0000",
+        fontSize: "12px",
+        fontWeight: "blod",
+        fontFamily: "Courir new"
+    }
+}
+stickyTracking：设置提示框触发模式，默认是鼠标在点的附近就触发提示框，设置 false 后只有鼠标划过点才触发
+hideDelay：提示框隐藏延迟时间
+
+如何在外部触发提示框？
+chart.tooltip.refresh()
+var point_index = clicked_index;
+var next_or_prev_point = chart.series[0].data[point_index + 1];
+chart.tooltip.refresh(next_or_prev_point);
+chart.tooltip.refresh([ next_or_prev_point_1, next_or_prev_point_2, next_or_prev_point_3 ]);
+//tooltip.refresh(points, e)
+
+
+document.onkeydown = function (e) {
+    var theChart = $('#container').highcharts();
+    var maxP = theChart.series[0].points.length;
+    console.log(p);
+    switch (e.keyCode) {
+        case 37:
+            console.log('left');
+            if (p == 0) {
+                p = p;
+            } else {
+                p = p - 1;
+            }
+            theChart.tooltip.refresh(theChart.series[0].points[p]);
+            break;
+        case 38:
+            console.log('up');
+            break;
+        case 39:
+            console.log('right');
+            if (p == maxP) {
+                p = p;
+            } else {
+                p = p + 1;
+            }
+            theChart.tooltip.refresh(theChart.series[0].points[p]);
+            break;
+        case 40:
+            console.log('down');
+            break;
+    }
+};
+-->
+</body>
+</html>
