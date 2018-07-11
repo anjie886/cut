@@ -1,0 +1,164 @@
+https://github.com/xSirrioNx/js-xlsx
+
+
+使用js-xlsx改良过的版本，这个SheetJS分支版本为SheetJS社区版本添加了输出文件颜色设置，真的是要感谢这位xSirrioNx的贡献。
+
+创建样式对象
+excelCell
+var excelCell = {
+    v: "",
+    t: "s",
+    s: {
+        fill: {
+                patternType: "none",
+                fgColor: {rgb: "FF000000"},
+                bgColor: {rgb: "FFFFFFFF"}
+        },
+        font: {
+          name: 'Times New Roman',
+          sz: 16,
+          color: {rgb: "#FF000000"},
+          bold: false,
+          italic: false,
+          underline: false
+        },
+        alignment: {
+            vertical: "center",
+            horizontal: "center",
+            indent:0,
+            wrapText: true
+        },
+        border: {
+          top: {style: "thin", color: {auto: 1}},
+          right: {style: "thin", color: {auto: 1}},
+          bottom: {style: "thin", color: {auto: 1}},
+          left: {style: "thin", color: {auto: 1}}
+        }
+    }
+};
+headerCellStyle
+var headerCellStyle =  {
+    fill: {
+        patternType: "solid",
+        fgColor: {rgb: "FFdbdbdb"},
+        bgColor: {rgb: "FFdbdbdb"}
+    },
+  alignment: {
+    vertical: "center",
+    horizontal: "center",
+    indent:0,
+    wrapText: true
+  },
+  border: {
+    top: {style: "thin", color: {auto: 1}},
+    right: {style: "thin", color: {auto: 1}},
+    bottom: {style: "thin", color: {auto: 1}},
+    left: {style: "thin", color: {auto: 1}}
+  }
+};
+设置样式对象
+这里设置的是第一行的单元格样式。
+
+var headeRange = {s:{c:0, r:0}, e:{c:16, r:0}};
+for (var R = headeRange.s.r; R <= headeRange.e.r; ++R) {
+  for (var C = headeRange.s.c; C <= headeRange.e.c; ++C) {
+    var cell_address = {
+      c: C,
+      r: R
+    };
+    /* if an A1-style address is needed, encode the address */
+    var cell_ref = XLSX.utils.encode_cell(cell_address);
+    var cell = ws[cell_ref];
+    if(!$.isEmptyObject(cell)){
+        cell.s = headerCellStyle;
+    } else {
+        ws[cell_ref] = excelCell;
+    }
+  }
+}
+
+===============================================
+下载xlsx-style
+
+npm install xlsx-style
+
+xlsx-style核心模块 在 你安装路径\node_modules\xlsx-style\dist
+
+2.示例代码
+
+复制出 文件xlsx.full.min.js
+
+下载xlsx-style
+
+<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <title>示例</title></head><body>
+    <script src="./xlsx.full.min.js"></script>
+    <script>
+        function saveAs(obj, fileName) {            var tmpa = document.createElement("a");
+            tmpa.download = fileName || "下载";
+            tmpa.href = URL.createObjectURL(obj);
+            tmpa.click();
+            setTimeout(function () {
+                URL.revokeObjectURL(obj);
+            }, 100);
+        }        var jsono = [{            "id": 1, "合并的列头1": "数据11", "合并的列头2": "数据12", "合并的列头3": "数据13", "合并的列头4": "数据14",
+        }, {            "id": 2, "合并的列头1": "数据21", "合并的列头2": "数据22", "合并的列头3": "数据23", "合并的列头4": "数据24",
+        }];        const wopts = { bookType: 'xlsx', bookSST: true, type: 'binary', cellStyles: true };        function downloadExl(json, type) {            var tmpdata = json[0];
+            json.unshift({});            var keyMap = []; //获取keys
+            for (var k in tmpdata) {
+                keyMap.push(k);
+                json[0][k] = k;
+            }            var tmpdata = [];//用来保存转换好的json 
+            json.map((v, i) => keyMap.map((k, j) => Object.assign({}, {                v: v[k],                position: (j > 25 ? getCharCol(j) : String.fromCharCode(65 + j)) + (i + 1)
+            }))).reduce((prev, next) => prev.concat(next)).forEach((v, i) => tmpdata[v.position] = {                v: v.v
+            });            var outputPos = Object.keys(tmpdata); //设置区域,比如表格从A1到D10
+            tmpdata["B1"].s = { font: { sz: 14, bold: true, color: { rgb: "FFFFAA00" } }, fill: { bgColor: { indexed: 64 }, fgColor: { rgb: "FFFF00" } } };//<====设置xlsx单元格样式
+            tmpdata["!merges"] = [{                s: { c: 1, r: 0 },                e: { c: 4, r: 0 }
+            }];//<====合并单元格 
+            var tmpWB = {                SheetNames: ['mySheet'], //保存的表标题
+                Sheets: {                    'mySheet': Object.assign({},
+                        tmpdata, //内容
+                        {                            '!ref': outputPos[0] + ':' + outputPos[outputPos.length - 1] //设置填充区域
+                        })
+                }
+            };
+            tmpDown = new Blob([s2ab(XLSX.write(tmpWB,
+                { bookType: (type == undefined ? 'xlsx' : type), bookSST: false, type: 'binary' }//这里的数据是用来定义导出的格式类型
+            ))], {                    type: ""
+                });
+            saveAs(tmpDown, "这里是下载的文件名" + '.' + (wopts.bookType == "biff2" ? "xls" : wopts.bookType));
+        }        function getCharCol(n) {            let temCol = '',
+                s = '',
+                m = 0
+            while (n > 0) {
+                m = n % 26 + 1
+                s = String.fromCharCode(m + 64) + s
+                n = (n - m) / 26
+            }            return s
+        }        function s2ab(s) {            if (typeof ArrayBuffer !== 'undefined') {                var buf = new ArrayBuffer(s.length);                var view = new Uint8Array(buf);                for (var i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;                return buf;
+            } else {                var buf = new Array(s.length);                for (var i = 0; i != s.length; ++i) buf[i] = s.charCodeAt(i) & 0xFF;                return buf;
+            }
+        }    </script>
+    <button onclick="downloadExl(jsono)">导出</button></body></html>
+
+
+===========================
+let tmpdata = [] // 用来保存转换好的json
+    json.map((v, i) => keyMap.map((k, j) => Object.assign({}, {
+      v: v[k],
+      position: (j > 25 ? this.getCharCol(j) : String.fromCharCode(65 + j)) + (i + 1)
+    }))).reduce((prev, next) => prev.concat(next)).forEach(function (v) {
+      tmpdata[v.position] = {
+        v: v.v,
+      },
+        /*全局添加边框样式*/
+      tmpdata[v.position].s = {
+        border:{
+          top:{style:'thin'}, left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}
+        }
+      }
+    })
+
+
+            全局添加样式里面可以通过位置区间tmpdata[v.position]判断来选择性的加边框
